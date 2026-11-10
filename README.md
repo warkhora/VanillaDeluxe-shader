@@ -1,250 +1,193 @@
 # VanillaDeluxe 1.11.0 – Performance & Polish Update
 
-En shaderpack for Minecraft Java 26.2 med Iris 1.11.4 eller nyere og Sodium. Pakken har
-fotorealistisk lyssetting med en mørk, varm og rødlig karakter, og er laget for høy ytelse.
+A shaderpack for Minecraft Java 26.2 using Iris 1.11.4 or newer and Sodium. It features photorealistic lighting with a dark, warm, and reddish character, designed for high performance.
 
-## Installasjon
+## Installation
 
-1. Installer Fabric med Iris og Sodium for Minecraft 26.2. Iris 1.11.4 eller nyere er påkrevd.
-2. Legg `VanillaDeluxe_v1.11.0.zip` i mappen `shaderpacks` i Minecraft-mappen din. Ikke pakk den ut.
-3. I spillet: **Options → Video Settings → Shader Packs**, velg VanillaDeluxe og trykk **Apply**.
+1. Install Fabric with Iris and Sodium for Minecraft 26.2. Iris 1.11.4 or newer is required.
+2. Place `VanillaDeluxe_v1.11.0.zip` into the `shaderpacks` folder in your `.minecraft` directory. Do not extract it.
+3. In-game: Go to **Options → Video Settings → Shader Packs**, select VanillaDeluxe, and click **Apply**.
 
-**Viktig:** Iris støtter ikke Vulkan. Står **Graphics API** i videoinnstillingene på Vulkan, må
-du sette det til Default eller Prefer OpenGL.
+**Important:** Iris does not support Vulkan. If your **Graphics API** in video settings is set to Vulkan, you must change it to Default or Prefer OpenGL.
 
-## Ray Tracing og profiler
+## Ray Tracing and Profiles
 
-Velg profil øverst i **Shader Pack Settings** eller i menyen **Ray Tracing**. Profilene styrer bare
-ray tracing. Skygger, skyer og resten stiller du i sine egne menyer.
+Select your profile at the top of **Shader Pack Settings** or in the **Ray Tracing** menu. Profiles only control ray tracing. Shadows, clouds, and everything else are configured in their respective menus.
 
-| Profil | Hva den gjør | GPU-tid i testriggen, 1440p |
+| Profile | What it does | GPU Time in Test Rig, 1440p |
 |---|---|---|
-| **Av** | Vanlig Minecraft-lys med omgivelsesskygge | 3,4–3,8 ms |
-| **Lav** | Strålesporet lys og skygger fra fakler, glowstone og lava | +0,4–1,0 ms |
-| **Middels** (standard) | Som Lav, pluss sprettlys med 1 spratt og 2 chunks rekkevidde | omtrent som forrige versjon |
-| **Høy** | 3 spratt, 4 chunks rekkevidde og Advanced Color Tracing | +0,5–0,9 ms over Middels |
-| **Ultra** | Opptil 24 spratt, 16 chunks rekkevidde og Advanced Color Tracing | +0,8–1,7 ms over Middels |
+| **Off** | Standard Minecraft lighting with ambient occlusion | 3.4–3.8 ms |
+| **Low** | Ray-traced lighting and shadows from torches, glowstone, and lava | +0.4–1.0 ms |
+| **Medium** (default) | Same as Low, plus bounce lighting with 1 bounce and 2 chunks range | similar to previous version |
+| **High** | 3 bounces, 4 chunks range, and Advanced Color Tracing | +0.5–0.9 ms over Medium |
+| **Ultra** | Up to 24 bounces, 16 chunks range, and Advanced Color Tracing | +0.8–1.7 ms over Medium |
 
-I menyen kan du også stille **Lysspratt** (1–24), **Strålelengde** (1–16 chunks), **Trinn per stråle**,
-**Bredde på denoiser** og **Mykt fyllys** hver for seg.
+In the menu, you can also individually adjust **Light Bounces** (1–24), **Ray Distance** (1–16 chunks), **Steps per Ray**, **Denoiser Width**, and **Soft Fill Light**.
 
-**Strålesporet blokklys.** Skyggepasset legger blokkene i en voksel-scene på 128 × 64 × 128 blokker
-rundt spilleren, og lister hver lyskilde. Hver piksel i halv oppløsning velger én lyskilde i nærheten og
-sender én skyggestråle mot den. Lyset virker også når lyskilden er utenfor skjermen. Der lyset ikke
-når fram, er det like mørkt som om lyskilden ikke fantes (med **Mykt fyllys** på 0 %, som er standard).
+**Ray-Traced Block Light.** The shadow pass places blocks into a voxel scene of 128 × 64 × 128 blocks around the player and lists each light source. Each pixel at half resolution selects a nearby light source and casts one shadow ray toward it. The light also works when the light source is off-screen. Where the light does not reach, it is as dark as if the light source did not exist (with **Soft Fill Light** at 0%, which is the default).
 
-**Sprettlys.** Hver piksel i halv oppløsning følger én sti gjennom dybdebufferen. Hver flate stien
-treffer, blir lyst opp der og da av sin egen glød, sola, himmelen og blokklyset, og sender lyset videre
-i sin egen farge. En rød vegg kaster altså rødt lys, som et hvitt gulv sender videre. Svake stier
-avsluttes tidlig, så mange spratt koster mindre enn det høres ut som.
+**Bounce Lighting.** Each pixel at half resolution follows a single path through the depth buffer. Each surface the path hits is illuminated on the spot by its own glow, the sun, the sky, and block light, passing the light along in its own color. A red wall thus casts red light, which a white floor passes on. Weak paths terminate early, so many bounces cost less than it sounds.
 
-**Advanced Color Tracing.** Hver lyskilde lyser i fargen fra sin egen tekstur, for eksempel dyp blå
-rundt sjelefakler og rødt rundt redstone, og farget glass farger lyset som går gjennom det. Fargen
-lagres i voksel-scenen, så den koster nesten ingenting.
+**Advanced Color Tracing.** Each light source emits light in the color of its own texture—for example, deep blue around soul torches and red around redstone—and colored glass tints the light passing through it. The color is stored in the voxel scene, making it almost free to compute.
 
-**Denoiser.** Lyset samles over tid, omtrent et tredels sekund, og filtreres deretter i to romlige
-pass som stopper ved kanter i dybde og normal. De stopper også ved lysforskjeller som er større enn
-støyen som er målt i hver piksel, så skyggekanter holder seg skarpe. All støy gjentar seg i korte
-sykluser som filteret jevner helt ut, slik at skyggene ikke flimrer når kameraet står stille.
+**Denoiser.** Light is accumulated over time (about a third of a second) and then filtered in two spatial passes that stop at depth and normal edges. They also stop at light differences larger than the noise measured in each pixel, keeping shadow edges sharp. All noise repeats in short cycles that the filter smooths out entirely, preventing shadows from flickering when the camera stands still.
 
-**Begrensninger:**
-- Bare det som er på skjermen kan treffes av sprettlyset. Det direkte lyset fra lyskilder virker også
-  utenfor skjermen.
-- Utenfor voksel-scenen, omtrent 50 blokker bortover og 20 blokker opp eller ned, faller lyset tilbake
-  til vanlig blokklys uten skygger.
-- Figurer og dyr blir lyst opp, men kaster ikke skygger fra blokklys. Halve blokker som trapper og heller
-  demper lyset i stedet for å stoppe det nøyaktig langs formen sin.
-- Bare første spratt får skygger fra blokklys. Dypere spratt bruker det vanlige lysnivået, siden de er
-  for svake til at skyggene synes.
-- De gamle helhetsprofilene (Ultra Fast, Lav, Middels, Høy) er erstattet av ray tracing-profilene.
-  Iris har bare én profilliste.
+**Limitations:**
+- Only objects on screen can be hit by bounce lighting. Direct lighting from light sources also works off-screen.
+- Outside the voxel scene (about 50 blocks horizontally and 20 blocks vertically), lighting falls back to standard block light without shadows.
+- Entities and mobs are illuminated, but do not cast shadows from block light. Half-blocks like stairs and slabs attenuate light instead of stopping it precisely along their shape.
+- Only the first bounce receives shadows from block light. Deeper bounces use the standard light level, as they are too weak for shadows to be visible.
+- The old holistic profiles (Ultra Fast, Low, Medium, High) have been replaced by ray tracing profiles. Iris only supports a single profile list.
 
-Path tracing-versjonen ligger urørt i `archive/VanillaDeluxe-path-tracing.zip`.
+The path tracing version remains untouched in `archive/VanillaDeluxe-path-tracing.zip`.
 
-## Røyk og tåke
+## Smoke and Fog
 
-Menyen **Smoke & Fog** har disse innstillingene:
+The **Smoke & Fog** menu contains these settings:
 
-- **Volumetrisk røyk**: fakler, bål, ild og lava sender opp røyk som stiger, virvler og får gløden
-  fra kilden sin. Den erstatter de flate grå røykpartiklene over dem. Røyken bruker listen over
-  lyskilder fra voksel-scenen, så den virker også med ray tracing av.
-- **Volumetrisk tåke**:
-  - Svevende dis i dype huler, som blir tettere jo dypere du er og lyses av fakler og lava rundt den.
-  - Tåkebanker som ruller inn med regn, og blir tettere i tordenvær.
-  - Tykk tåke i Nether, i fargen til biomet og glødende oransje over lavahavet.
-- **Tetthet på huledis**, **Styrke på værtåke** og **Tetthet på Nether-tåke** fra 0 til 300 %.
+- **Volumetric Smoke**: Torches, campfires, fire, and lava emit smoke that rises, swirls, and picks up the glow from its source. It replaces the flat grey smoke particles above them. Smoke uses the light source list from the voxel scene, so it works even with ray tracing disabled.
+- **Volumetric Fog**:
+  - Floating haze in deep caves, becoming denser the deeper you are, illuminated by surrounding torches and lava.
+  - Fog banks rolling in with rain, becoming denser during thunderstorms.
+  - Thick fog in the Nether, colored to match the biome and glowing orange over the lava sea.
+- **Cave Haze Density**, **Weather Fog Intensity**, and **Nether Fog Density** ranging from 0% to 300%.
 
-Alt beregnes i det samme volumetriske passet som solstrålene, i halv oppløsning med filtrering over
-tid. Det koster derfor ikke et ekstra pass.
+Everything is calculated in the same volumetric pass as sunshafts, at half resolution with temporal filtering. Therefore, it does not require an extra pass.
 
-**Begrensninger:**
-- Røyken kommer bare fra lyskilder innenfor voksel-scenen, omtrent 50 blokker bortover.
-- Iris sier ikke hvilke partikler som er røyk. Grå partikler rett over en røykkilde fjernes, mens
-  gnister og flammer blir værende.
-- Huledisen vet at du er under jorden ut fra hvor mye himmel du ser, slik spillet selv gjør det.
-- Lava-røyken leses rett fra lavablokkene i voksel-scenen. Den er derfor lik fra bilde til bilde, uansett i
-  hvilken rekkefølge skjermkortet tegner blokkene.
+**Limitations:**
+- Smoke only originates from light sources within the voxel scene (about 50 blocks away).
+- Iris does not expose which particles are smoke. Grey particles directly above a smoke source are removed, while sparks and flames remain.
+- Cave haze knows you are underground based on how much sky is visible, matching vanilla game behavior.
+- Lava smoke is read directly from lava blocks in the voxel scene. It is therefore identical from frame to frame, regardless of the order in which the GPU renders blocks.
 
-## Vær
+## Weather
 
-Menyen **Weather & Materials** (også under **Smoke & Fog**) har disse innstillingene:
+The **Weather & Materials** menu (also under **Smoke & Fog**) contains these settings:
 
-- **Regn og snø**: regnet er regnet fra 1.9.0: vanilla-stripene, med lysbrytning, vinddrift og lys fra fakler.
-  Snøen tegnes av pakken i ekte dybde, 3D Smooth (standard) eller Ultra med flere lag lenger unna.
-  Vanilla-plaskene på bakken filtreres bort i partikkelpasset.
-- **Vær på glass**: i regn sitter dråper på vinduene og glir sakte nedover, og de bøyer det du ser gjennom
-  og i glasset. I snø vokser en smal, ujevn rimkant inn fra rutenes kanter, mer jo kraftigere det snør.
-- **Regnplask**: små dråper spretter lavt opp der regnet treffer bakken. Kraftigere regn og storm gir flere
-  og høyere dråper.
+- **Rain and Snow**: Rain uses the rain style from 1.9.0: vanilla streaks with light refraction, wind drift, and torch light. Snow is rendered by the pack in true depth using 3D Smooth (default) or Ultra with multiple layers further away. Vanilla ground splashes are filtered out in the particle pass.
+- **Weather on Glass**: During rain, droplets sit on windows and slowly slide down, refracting what you see through and in the glass. During snow, a narrow, uneven frost border grows inward from the edges of the panes, scaling with the snowfall intensity.
+- **Rain Splashes**: Small droplets bounce low where rain hits the ground. Heavier rain and storms produce more and higher droplets.
 
-- **Lysbrytning i regn**: hver regndråpe bøyer bildet bak seg. Dette gjøres i sluttbildet, etter TAA, så
-  stripene holder seg skarpe. Dråpene fanger lyset fra sola og månen, og fra fakler i sin egen farge med
-  ray tracing.
-- **Synlighet på regn**: hvor tydelig regnet synes.
-- **Regnringer**: Av, Lav, Middels eller Høy. Regndråper lager ringer i vann, pytter og på våt bakke, og
-  ringene synes i refleksjonene.
-- **Vinddrift i snø**: hvor hardt vinden blåser og virvler snøen. Snøfnugg lyser opp nær fakler og lava.
+- **Rain Light Refraction**: Each raindrop refracts the image behind it. This is done in the final image after TAA, keeping the streaks sharp. Droplets catch light from the sun and moon, and from torches in their own color via ray tracing.
+- **Rain Visibility**: How clearly rain is rendered.
+- **Rain Ripples**: Off, Low, Medium, or High. Raindrops create ripples in water, puddles, and on wet ground, visible in reflections.
+- **Snow Wind Drift**: How hard the wind blows and swirls the snow. Snowflakes light up near torches and lava.
 
-Under uvær lener regnet seg i vinden, skydekket lukker seg, sol- og himmellys dempes, og disen og tåken
-tetner, mest i tordenvær. Snøvær gir lysere og hvitere tåke enn regn.
+During storms, rain slants in the wind, cloud cover closes in, sun and sky light dim, and haze and fog thicken—most severely during thunderstorms. Snowstorms produce brighter and whiter fog than rain.
 
-**Begrensninger:**
-- Vanilla-partiklene for plask beholdes. Ringene ligger i overflaten, ikke som egne partikler.
-- Snø og regn skilles ut fra biomet der du står, slik Iris oppgir det.
+**Limitations:**
+- Vanilla splash particles are retained. Ripples are rendered on surfaces rather than as separate particles.
+- Snow and rain are determined based on the biome you are standing in, as reported by Iris.
 
-Under **Utseende** finner du:
+Under **Appearance** you will find:
 
-- **VanillaDeluxe / Dark Red** (standard), **Naturlig varm** eller **Nøytral**
-- **AgX** eller **ACES** som tonemapping
-- Menyfanene **Ray Tracing**, **Smoke & Fog**, **Lighting** og **Materials**, med fargekoder
-- **Solnedgangsdybde** for hvor røde solnedgangene skal være
+- **VanillaDeluxe / Dark Red** (default), **Natural Warm**, or **Neutral**
+- **AgX** or **ACES** as tonemapping options
+- Menu tabs for **Ray Tracing**, **Smoke & Fog**, **Lighting**, and **Materials** with color codes
+- **Sunset Depth** to control how red sunsets appear
 
-## Nytt i 1.11.0
+## What's New in 1.11.0
 
-- **Regnet fra 1.9.0 er tilbake.** Vanilla-plaskene på bakken fjernes: Iris kan bare slå dem av sammen med
-  selve regnet, så partikkelpasset kjenner dem igjen som blålige partikler rett oppå bakken der det regner.
-- **Dybdeskarphet er av som standard**, så bildet er helt skarpt.
-- **Tilt-shift / miniatyr** under **Camera Effects**: myk uskarphet øverst og nederst, med et skarpt bånd
-  over midten. Både styrke og høyde på båndet kan stilles.
-- **Ytelse:**
-  - Volumetrikken (tåke, solstråler, skyer og røyk) regnes i et sjakkbrettmønster, halvparten av pikslene per
-    bilde, og det temporale filteret fyller inn resten. Den var allerede i halv oppløsning.
-  - Sprett etter det første bruker halvparten så mange søketrinn.
-  - Linseflaren måles én gang per bilde i stedet for i hver piksel, og smusset på linsen beregnes bare der det
-    lyser.
-  - Profilene **Av** og **Lav** bruker også lettere skygger, refleksjoner, volumetrikk, POM og bølger, for eldre
-    skjermkort. Middels, Høy og Ultra er uendret.
+- **Rain from 1.9.0 is back.** Vanilla ground splashes are removed: Iris can only disable them alongside the rain itself, so the particle pass recognizes them as bluish particles directly on top of the ground where it is raining.
+- **Depth of Field is off by default**, ensuring the image is completely sharp.
+- **Tilt-shift / Miniature** under **Camera Effects**: Soft blur at the top and bottom of the screen with a sharp horizontal band across the middle. Both the strength and height of the band are adjustable.
+- **Performance:**
+  - Volumetrics (fog, sunshafts, clouds, and smoke) are rendered in a checkerboard pattern (half of the pixels per frame), filled in by the temporal filter. Volumetrics were already running at half resolution.
+  - Secondary bounces use half as many search steps.
+  - Lens flare is measured once per frame instead of per pixel, and lens dirt is calculated only where light shines.
+  - The **Off** and **Low** profiles also use lighter shadows, reflections, volumetrics, POM, and waves for older GPUs. Medium, High, and Ultra remain unchanged.
 
-## Nytt i 1.10.0
+## What's New in 1.10.0
 
-**Vær bare der det faktisk regner.** Skyggepasset lager et høydekart over den øverste blokken i hver kolonne
-innenfor 64 blokker. Alle væreffekter sjekker det: regn, snø, plask, regnringer, våt bakke, pytter og dråper
-på glass. Under tak er bakken tørr, også rett innenfor takkanten. Lenger unna enn kartet brukes lysnivået
-fra himmelen, som før.
+**Weather only where it actually rains.** The shadow pass creates a heightmap of the topmost block in each column within 64 blocks. All weather effects check it: rain, snow, splashes, ripples, wet ground, puddles, and droplets on glass. Areas under a roof remain dry, including right inside the roof edge. Beyond the heightmap range, the sky light level is used as before.
 
-**Kameraeffekter** (menyen **Camera Effects**):
-- **Dybdeskarphet** med autofokus på det som er midt på skjermen. Fokuset følger mykt etter, og hånden
-  holdes alltid skarp.
-- **Linseflare** fra sola og månen, dempet av skyer og terreng foran.
-- **Smuss på linsen**, som bare lyser opp rundt sterke lys.
+**Camera Effects** (the **Camera Effects** menu):
+- **Depth of Field** with autofocus on whatever is in the center of the screen. Focus tracks smoothly, and the handheld item is always kept sharp.
+- **Lens Flare** from the sun and moon, occluded by clouds and foreground terrain.
+- **Lens Dirt**, which only lights up around bright light sources.
 
-**Dimensjoner** (menyen **Dimensions**):
-- **Nether**: kraftigere varmeflimring høyt over lavahavene. Tåken tar farge fra lysene i den, og glowstone
-  og ild kaster lysstråler gjennom den. Lysstrålene krever strålesporet blokklys.
-- **End**: **Void Aurora**, bølgende gardiner av blått og fiolett lys. **End-krystaller** gløder og sender
-  sakte roterende lysstråler ut i mørket.
+**Dimensions** (the **Dimensions** menu):
+- **Nether**: Enhanced heat haze high above lava seas. Fog takes on the color of nearby lights, and glowstone and fire cast light shafts through it. Light shafts require ray-traced block light.
+- **End**: **Void Aurora**, undulating curtains of blue and violet light. **End Crystals** glow and cast slowly rotating light shafts out into the dark.
 
-**PBR og fysikk** (menyen **PBR & Physics**):
-- **Dynamiske pytter**: vannet samler seg først i senkninger, der terrenget rundt er høyere, og sprer seg
-  til flat mark etter hvert. Etter regnet krymper pyttene igjen, raskere i sol.
-- **Subsurface scattering** fantes fra før. Nå har det en egen styrke, og undersiden av løv slipper også
-  gjennom litt himmellys, så den holder seg grønn i stedet for grå.
+**PBR and Physics** (the **PBR & Physics** menu):
+- **Dynamic Puddles**: Water first collects in depressions where surrounding terrain is higher, gradually spreading to flat ground. After rain, puddles shrink again, faster under the sun.
+- **Subsurface Scattering** was previously available. It now features a dedicated intensity setting, and the undersides of leaves let some sky light through, keeping them green instead of grey.
 
-**Begrensninger:**
-- End-krystallene finnes via `entity.properties`. Hvis Iris ikke gir dem en ID, gløder de som vanlig, men
-  strålene mangler.
-- Med eldre Iris som ikke kan slå av vanilla-været, vises det fortsatt ingenting av det, men plaskpartiklene
-  kan komme tilbake.
-- Høydekartet bygges av det skyggepasset tegner. Blokker utenfor skyggeavstanden mangler i kartet, og der
-  faller væreffektene tilbake til lysnivået fra himmelen.
+**Limitations:**
+- End crystals are detected via `entity.properties`. If Iris does not assign them an ID, they glow normally, but the light shafts will be missing.
+- With older versions of Iris that cannot disable vanilla weather, vanilla weather will still not be visible, but splash particles might reappear.
+- The heightmap is built from what the shadow pass renders. Blocks outside shadow distance are missing from the map, causing weather effects to fall back to the sky light level there.
 
-## Funksjoner
+## Features
 
-**Lys og materialer**
-- labPBR og seusPBR: normal, specular, ruhet, metaller, glød, porøsitet og subsurface
-- Parallax occlusion mapping med selvskygge
-- Innebygde materialer, så vanilla-teksturer får glans, metall og glød uten PBR-pakke
-- Omgivelsesskygge med synlighetsbitmaske og strålesporet sprettlys med 1–24 spratt, i halv oppløsning med temporal akkumulering og støystyrt romlig denoiser
-- Våte overflater og pytter i regn, og dynamisk håndlys
+**Lighting and Materials**
+- labPBR and seusPBR: normals, specular, roughness, metals, emission, porosity, and subsurface scattering
+- Parallax occlusion mapping with self-shadowing
+- Built-in materials giving vanilla textures gloss, metal, and emission without a PBR resource pack
+- Ambient occlusion with visibility bitmask and ray-traced bounce lighting (1–24 bounces) at half resolution with temporal accumulation and a noise-driven spatial denoiser
+- Wet surfaces and puddles during rain, plus dynamic hand-held lighting
 
-**Skygger**
-- Kontaktherdende skygger: skarpe ved kontakt, mykere med avstanden
-- Fargede skygger gjennom glass, kaustikk under vann og lys gjennom løv
+**Shadows**
+- Contact-hardening shadows: sharp at contact points, softer with distance
+- Colored shadows through glass, underwater caustics, and light filtering through foliage
 
-**Atmosfære**
-- Fysisk basert Rayleigh-, Mie- og ozonspredning, beregnet i en liten himmeltabell hvert bilde
-- Solstråler, høydetåke og volumetriske skyer med skyskygger
+**Atmosphere**
+- Physically based Rayleigh, Mie, and ozone scattering calculated in a small sky LUT every frame
+- Sunshafts, height fog, and volumetric clouds with cloud shadows
 
-**Vann og refleksjoner**
-- Prosedyrebaserte bølger, Fresnel, lysbrytning og dybdefarge, med valgfritt skum langs land
-- Vann lyses bare av lys som faktisk når det, så det er helt mørkt uten lyskilder i nærheten
-- Skjermrefleksjoner på vann, glass, metall, polerte og våte flater
+**Water and Reflections**
+- Procedural waves, Fresnel, light refraction, and depth coloring, with optional foam along shores
+- Water is only illuminated by light that actually reaches it, making it pitch black when no light sources are nearby
+- Screen-space reflections on water, glass, metal, polished, and wet surfaces
 
-**Materialeffekter** (egen meny)
-- Lava: pulserende glød med egen glidebryter, glans på smeltede områder og varmeflimring i lufta over
-- Is: blank overflate med refleksjoner og lysbrytning. Vanlig is er gjennomsiktig med kald kropp, mens pakket is og blåis bare reflekterer, siden de er massive blokker
-- Glass: Fresnel-refleksjoner fra begge sider av ruten og fysisk beregnet lysbrytning, også i de klare delene av vinduer
+**Material Effects** (dedicated menu)
+- Lava: Pulsing emission with a dedicated slider, gloss on molten areas, and heat haze in the air above
+- Ice: Glossy surface with reflections and light refraction. Regular ice is transparent with a cold tint, while packed ice and blue ice only reflect, being massive blocks
+- Glass: Fresnel reflections from both sides of the pane and physically calculated light refraction, including clear window sections
 
-**Bilde**
-- TAA med Catmull-Rom og varianskutting, som også fjerner støy fra de samplede effektene
-- AgX og ACES, bloom, svak kromatisk aberrasjon, automatisk eksponering og skotopisk nattsyn
+**Image**
+- TAA with Catmull-Rom and variance clipping, which also denoises sampled effects
+- AgX and ACES, bloom, subtle chromatic aberration, automatic exposure, and scotopic night vision
 
-Nether og End har egne lysoppsett. Nether kjører uten skyggepass, som sparer mye GPU-tid.
+The Nether and End feature dedicated lighting setups. The Nether runs without a shadow pass, saving significant GPU time.
 
-## Slik er pakken testet
+## How the Pack is Tested
 
-Testene ble kjørt uten Minecraft, med verktøyene i `tools/`:
+Tests are run without Minecraft using the tools in `tools/`:
 
-- **Kompilering:** Alle program, i alle tre dimensjoner, kompileres og lenkes med NVIDIA-driveren
-  over alle sett med innstillinger: alle profiler, hvert valg av og på, og ytterverdier.
-- **Kjøring:** En testrigg (`tools/harness`) kjører hele pipelinen på en syntetisk verden, med samme
-  rekkefølge, buffer-flipping og skyggematriser som i kildekoden til Iris.
-- **Statiske sjekker:** `tools/build.py lint` kontrollerer uniforms, menyer, språkfiler og reserverte navn.
+- **Compilation:** All programs across all three dimensions are compiled and linked with the NVIDIA driver across all settings: all profiles, every toggle, and boundary values.
+- **Execution:** A test rig (`tools/harness`) runs the full pipeline on a synthetic world with the exact same order, buffer flipping, and shadow matrices as Iris's source code.
+- **Static Checks:** `tools/build.py lint` checks uniforms, menus, language files, and reserved names.
 
-**Ikke testet i selve spillet.** Iris sin kodeoversetter (glsl-transformer) kjører ikke i testriggen,
-og Minecraft-spesifikk geometri som entiteter og partikler er bare forenklet representert.
+**Not tested in-game.** Iris's shader translator (glsl-transformer) does not run in the test rig, and Minecraft-specific geometry such as entities and particles are only represented in simplified form.
 
-Hvis noe feiler i spillet: trykk **Ctrl+D** på Shader Packs-skjermen for å slå på feilsøking, last
-pakken på nytt, og se etter feilmeldinger i `logs/latest.log`. Oversatt shaderkode havner da i
-mappen `patched_shaders`.
+If something fails in-game: Press **Ctrl+D** on the Shader Packs screen to enable debugging, reload the pack, and check `logs/latest.log` for error messages. Translated shader code will be output to the `patched_shaders` folder.
 
-## Utvikling
+## Development
 
 ```bash
 python tools/build.py zip
-```
+Markdown
+## Development
 
 ```bash
+python tools/build.py zip
+Bash
 dotnet run --project tools/harness -c Release -- compile
-```
-
-```bash
+Bash
 dotnet run --project tools/harness -c Release -- render --scene sunset
-```
+tools/build.py creates program stubs in world0, world-1, and world1, and writes VanillaDeluxe.zip to the root of the project folder. The actual code resides in shaders/program and shaders/lib, and all configuration options are in shaders/lib/settings.glsl. The test rig uses the copy of shaders located in the parent directory of the program file, and scenes can be selected using --scene: day, sunset, dusk, night, rain, pool, shore, underwater, cave, forest, pavilion, or moving.
 
-`tools/build.py` lager program-stubbene i `world0`, `world-1` og `world1` og skriver
-`VanillaDeluxe.zip` øverst i prosjektmappen. Selve koden ligger i `shaders/program` og `shaders/lib`, og alle valgene i
-`shaders/lib/settings.glsl`. Testriggen bruker kopien av `shaders` som ligger i en overliggende mappe
-av programfilen, og kan velge scene med `--scene`: `day`, `sunset`, `dusk`, `night`, `rain`, `pool`,
-`shore`, `underwater`, `cave`, `forest`, `pavilion` eller `moving`.
+Credits and References
+All code was written specifically for this pack. The visual style was inspired by Complementary Unbound, but no code was copied from it. The following published methods were used:
 
-## Kilder
+Hillaire 2020: Atmosphere coefficients
 
-All kode er skrevet for denne pakken. Inspirasjonen til utseendet er Complementary Unbound, men
-ingen kode er hentet derfra. Følgende publiserte metoder er brukt:
+Therrien et al. 2023: Indirect lighting with visibility bitmasks
 
-- Hillaire 2020: atmosfærekoeffisienter
-- Therrien mfl. 2023: indirekte lys med synlighetsbitmaske
-- Stephen Hill: ACES-tilpasning
-- Benjamin Wrensch: AgX-tilpasning
-- Jorge Jimenez: interleaved gradient noise og Catmull-Rom-oppslag med fem punkter
+Stephen Hill: ACES fitting
+
+Benjamin Wrensch: AgX fitting
+
+Jorge Jimenez: Interleaved gradient noise and 5-point Catmull-Rom sampling
