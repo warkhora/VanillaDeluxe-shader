@@ -1,4 +1,4 @@
 #version 430 compatibility
 #define FSH 1
-#define DIM_ID 1
+#define DIM_ID 0
 #include "/program/shadow.glsl"
